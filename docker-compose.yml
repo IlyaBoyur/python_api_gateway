@@ -1,0 +1,38 @@
+x-app_environment: &app_environment
+  PROJECT_NAME: ${PROJECT_NAME:-api-gateway}
+  DEBUG: ${DEBUG:-True}
+  CORS_ORIGINS: ${CORS_ORIGINS:-*}
+  REDIS_PREFIX: ${REDIS_PREFIX:-gateway}
+  LOGGING_SERIALIZER: ${LOGGING_SERIALIZER:-False}
+  LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
+
+x-redis_environment: &redis_environment
+  REDIS_DSN: ${REDIS_DSN:-redis://redis:6379}
+
+
+services:
+  app:
+    container_name: gateway-app
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./:/app/:cached
+    ports:
+      - 8080:8080
+    entrypoint: docker/entrypoint.sh
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
+    depends_on:
+      - redis
+    environment:
+      <<: [*app_environment, *redis_environment]
+
+  redis:
+    container_name: gateway-redis
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    volumes:
+      - ./${REDIS_DATA:-redis-data}:/data
+    ports:
+      - 6379:6379
