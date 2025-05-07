@@ -1,18 +1,97 @@
 import os
+from functools import lru_cache
 from logging import config as logging_config
 from pathlib import Path
+from typing import Any
+
+from pydantic import AnyUrl, BaseSettings, RedisDsn, validator
 
 from src.core.logger import LOGGING
 
-# Применяем настройки логирования
-logging_config.dictConfig(LOGGING)
-# Название проекта. Используется в Swagger-документации
-PROJECT_NAME = os.getenv("PROJECT_NAME", "movies")
-# Настройки Redis
-REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
-# Настройки Elasticsearch
-ELASTIC_HOST = os.getenv("ELASTIC_HOST", "127.0.0.1")
-ELASTIC_PORT = int(os.getenv("ELASTIC_PORT", "9200"))
-# Корень проекта
+# Project Root Setting
 BASE_DIR = Path(__file__).parent.parent.parent
+
+
+# Logging Settings
+logging_config.dictConfig(LOGGING)
+
+
+class EnvBaseSettings(BaseSettings):
+    class Config(BaseSettings.Config):
+        env_file = ".env"
+        case_sensitive = False
+
+
+class AppSettings(EnvBaseSettings):
+    name: str = "backend"
+    debug: bool = True
+
+    class Config(EnvBaseSettings.Config):
+        env_prefix = "app_"
+
+
+class RedisSettings(EnvBaseSettings):
+    scheme: str = "redis"
+    user: str = ""
+    password: str = ""
+    host: str = "localhost"
+    port: str = "6379"
+    path: str = ""
+    dsn: RedisDsn | str = ""
+    prefix: str = ""
+
+    class Config(EnvBaseSettings.Config):
+        env_prefix = "redis_"
+
+    @validator("dsn", pre=True)
+    def assemble_dsn(cls, v: str | None, values: dict[str, Any]) -> str:
+        if isinstance(v, str) and len(v) > 1:
+            return v
+        return RedisDsn.build(
+            scheme=values["scheme"],
+            user=values.get("user"),
+            password=values.get("password"),
+            host=values["host"],
+            port=values.get("port"),
+            path=f"/{values.get('path')}",
+        )
+
+
+class ElasticsearchDsn(AnyUrl):
+    allowed_schemes = {"https"}
+    user_required = True
+
+
+class ElasticsearchSettings(EnvBaseSettings):
+    scheme: str = "https"
+    host: str = "127.0.0.1"
+    port: str = "9200"
+    dsn: ElasticsearchDsn | str = ""
+
+    class Config(EnvBaseSettings.Config):
+        env_prefix = "elastic_"
+
+    @validator("dsn", pre=True)
+    def assemble_dsn(cls, v: str | None, values: dict[str, Any]) -> str:
+        if isinstance(v, str) and len(v) > 1:
+            return v
+        return ElasticsearchDsn.build(
+            scheme=values["scheme"],
+            host=values["host"],
+            port=values["port"],
+        )
+
+
+class Settings(EnvBaseSettings):
+    app: AppSettings = AppSettings(name="movies")
+    base_dir: Path = BASE_DIR
+    redis: RedisSettings = RedisSettings()
+    es: ElasticsearchSettings = ElasticsearchSettings()
+
+
+app_settings = Settings()
+
+
+@lru_cache
+def get_settings():
+    return app_settings
