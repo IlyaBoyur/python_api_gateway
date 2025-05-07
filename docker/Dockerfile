@@ -16,8 +16,7 @@ EXPOSE 8000/tcp
 WORKDIR /app
 
 # Copy just the dependencies installation from the current directory to the Docker image
-# COPY pyproject.toml poetry.lock /app/
-COPY pyproject.toml  /app/
+COPY pyproject.toml poetry.lock /app/
 
 # Install necessary dependencies
 RUN set -ex; \

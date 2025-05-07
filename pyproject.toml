@@ -64,9 +64,10 @@ filterwarnings = [
 asyncio_mode = "auto"
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.14"
+python = ">=3.12,<3.13"
 uvloop = { version = "~0.19.0" }
 fastapi = "~0.95.0"
+orjson = "^3.10.18"
 pydantic = "~1.10.7"
 uvicorn = "~0.20.0"
 python-multipart = "~0.0.5"
@@ -74,6 +75,10 @@ python-multipart = "~0.0.5"
 python-dotenv = "~0.21.0"
 loguru = "^0.7.0"
 # sentry-sdk = "^1.19.1"
+
+# DBs
+redis = {extras = ["hiredis"], version = "^6.0.0"}
+elasticsearch = {extras = ["async"], version = "^9.0.1"}
 
 # SQLAlchemy = { version = ">=2,<3", extras = ["asyncio", "mypy"] }
 # SQLAlchemy-Utils = "^0.41.2"
@@ -127,3 +132,4 @@ ipython = "^8.25.0"
 # cairosvg = "^2.7.1"
 # svglib = "^1.5.1"
 # reportlab = "^4.3.1"
+
