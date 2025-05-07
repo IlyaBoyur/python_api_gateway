@@ -1,10 +1,12 @@
 import logging
 
 import uvicorn
-from src.core import config
-from src.core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from loguru import logger
+
+from src.core import config
+from src.core.logger import LOGGING
 
 app = FastAPI(
     # Конфигурируем название проекта. Оно будет отображаться в документации
