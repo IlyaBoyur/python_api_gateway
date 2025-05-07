@@ -1,4 +1,3 @@
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
 BACKEND_CONTAINER_NAME := app
 COMPOSE_FILES := -f docker-compose.yml
 
@@ -15,7 +14,7 @@ debugee-off:
 	docker compose up -d app
 
 start:
-	docker compose $(COMPOSE_FILES) up --remove-orphans -d
+	docker compose $(COMPOSE_FILES) up $(c) --remove-orphans -d
 
 stop:
 	docker compose $(COMPOSE_FILES) stop $(c)
@@ -24,10 +23,10 @@ down:
 	docker compose $(COMPOSE_FILES) down $(c)
 
 restart:
-	docker compose $(COMPOSE_FILES) restart
+	docker compose $(COMPOSE_FILES) restart $(c)
 
 rebuild:
-	docker compose $(COMPOSE_FILES) up -d --remove-orphans --build
+	docker compose $(COMPOSE_FILES) up $(c) -d --remove-orphans --build
 
 ps:
 	docker compose ps
