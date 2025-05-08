@@ -2,12 +2,15 @@ x-app_environment: &app_environment
   PROJECT_NAME: ${PROJECT_NAME:-api-gateway}
   DEBUG: ${DEBUG:-True}
   CORS_ORIGINS: ${CORS_ORIGINS:-*}
-  REDIS_PREFIX: ${REDIS_PREFIX:-gateway}
   LOGGING_SERIALIZER: ${LOGGING_SERIALIZER:-False}
   LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
 
 x-redis_environment: &redis_environment
   REDIS_DSN: ${REDIS_DSN:-redis://redis:6379}
+
+x-elastic_environment: &elastic_environment
+  ELASTIC_HOST: ${ELASTIC_HOST:-elastic}
+  ELASTIC_PORT: ${ELASTIC_PORT:-9200}
 
 
 services:
@@ -25,7 +28,9 @@ services:
     depends_on:
       - redis
     environment:
-      <<: [*app_environment, *redis_environment]
+      <<: [*app_environment, *redis_environment, *elastic_environment]
+    networks:
+      - cinema-bridge
 
   redis:
     container_name: gateway-redis
@@ -36,3 +41,10 @@ services:
       - ./${REDIS_DATA:-redis-data}:/data
     ports:
       - 6379:6379
+    networks:
+      - cinema-bridge
+
+networks:
+  cinema-bridge:
+    name: local-dev-network
+    external: true
