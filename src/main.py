@@ -2,24 +2,22 @@ import logging
 
 import uvicorn
 from elasticsearch import AsyncElasticsearch
-from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, ORJSONResponse
 
-from redis.asyncio import ConnectionPool, Redis
 from src.api.v1 import film
-from src.core.config import app_settings
+from src.common.exceptions import RepositoryError, ValidationServiceError
+from src.common.key_value_database import RedisDatabase
+from src.common.search_engine import ElasticDatabase
+from src.common.uvloop import activate_uvloop
 from src.core.logger import LOGGING
-from src.db import elastic, redis
+from src.providers import key_value_database, search_engine
+from src.providers.settings import app_settings
 
 app = FastAPI(
-    # Конфигурируем название проекта. Оно будет отображаться в документации
     title=app_settings.app.name,
-    # Адрес документации в красивом интерфейсе
     docs_url="/v1/docs",
-    # Адрес документации в формате OpenAPI
     openapi_url="/v1/openapi.json",
-    # Можно сразу сделать небольшую оптимизацию сервиса
-    # и заменить стандартный JSON-сереализатор на более шуструю версию, написанную на Rust
     default_response_class=ORJSONResponse,
 )
 
@@ -27,21 +25,30 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup():
     """Подключиться к базам при старте сервера."""
-    connection_pool: ConnectionPool = ConnectionPool.from_url(
-        url=app_settings.redis.dsn, encoding="utf8", decode_responses=True
-    )
-    redis.redis = Redis(connection_pool=connection_pool)
-    elastic.es = AsyncElasticsearch(hosts=[app_settings.es.dsn])
+    activate_uvloop()
+    key_value_database.redis_database = RedisDatabase.build(config=app_settings.redis.dict())
+    search_engine.elastic = ElasticDatabase.build(config=app_settings.es.dict())
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Отключиться от баз при выключении сервера."""
-    await redis.redis.close()
-    await elastic.es.close()
+    await key_value_database.redis_database.close()
+    await search_engine.elastic.close()
 
 
 app.include_router(film.router, prefix="/v1/films", tags=["films"])
+
+
+@app.exception_handler(ValidationServiceError)
+async def unicorn_exception_handler(request: Request, exc: ValidationServiceError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status, content={"message": exc.message})
+
+
+@app.exception_handler(RepositoryError)
+async def repository_exception_handler(request: Request, exc: RepositoryError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status, content={"message": exc.message})
+
 
 if __name__ == "__main__":
     # Приложение должно запускаться с помощью команды
