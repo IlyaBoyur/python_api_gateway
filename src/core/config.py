@@ -63,10 +63,11 @@ class ElasticsearchDsn(AnyUrl):
 
 
 class ElasticsearchSettings(EnvBaseSettings):
-    scheme: str = "https"
+    scheme: str = "http"
     host: str = "127.0.0.1"
     port: str = "9200"
     dsn: ElasticsearchDsn | str = ""
+    timeout: int = 25
 
     class Config(EnvBaseSettings.Config):
         env_prefix = "elastic_"
@@ -87,11 +88,3 @@ class Settings(EnvBaseSettings):
     base_dir: Path = BASE_DIR
     redis: RedisSettings = RedisSettings()
     es: ElasticsearchSettings = ElasticsearchSettings()
-
-
-app_settings = Settings()
-
-
-@lru_cache
-def get_settings():
-    return app_settings
