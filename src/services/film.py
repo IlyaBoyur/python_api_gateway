@@ -31,7 +31,7 @@ class FilmFilterSet(AsyncFilterSet):
         id=OrderingField("id"),
         imdb_rating=OrderingField("imdb_rating"),
         created=OrderingField("created"),
-        title=OrderingField("title"),
+        title=OrderingField("title.raw"),
     )
 
 
