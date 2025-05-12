@@ -31,7 +31,8 @@ class ElasticSearchEngine(ISearchEngine):
     @handle_es_exceptions
     async def search(self, index: str, params: dict) -> Any:
         """Search for documents in the specified index using the provided query."""
-        params["query"] = params["query"] if params.get("query") else {"match_all": {}}
+        if not params.get("query"):
+            params["query"] = {"match_all": {}}
         return await self._client.search(index=index, **params)
 
     @circuit_breaker(lambda self: self._cb)
