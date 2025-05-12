@@ -53,9 +53,33 @@ class InFilter(BaseFilter):
 
         :returns: query after the provided filtering has been applied
         """
-        terms = query.get("terms", {})
-        terms.update({self.field_name: value})
-        query["terms"] = terms
+        must_clauses = query.get("query", {}).get("bool", {}).get("must", [])
+        must_clauses.append({"terms": {self.field_name: value}})
+        query["query"] = query.get("query", {})
+        query["query"]["bool"] = query["query"].get("bool", {})
+        query["query"]["bool"]["must"] = must_clauses
+        return query
+
+
+class NotInFilter(BaseFilter):
+    def filter(
+        self,
+        query: dict[str, Any],
+        value: Sequence[str],
+        _: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Apply exclusion filtering by 'terms'.
+
+        :param query: query object
+        :param value: sequence of values for field to not have in filtered out objects
+
+        :returns: query after the provided filtering has been applied
+        """
+        must_not_clauses = query.get("query", {}).get("bool", {}).get("must_not", [])
+        must_not_clauses.append({"terms": {self.field_name: value}})
+        query["query"] = query.get("query", {})
+        query["query"]["bool"] = query["query"].get("bool", {})
+        query["query"]["bool"]["must_not"] = must_not_clauses
         return query
 
 
@@ -83,10 +107,11 @@ class RangeFilter(BaseFilter):
         if right_value is not None:
             filters.update({"lte": right_value})
         if filters:
-            ranges = query.get("query", {}).get("range", {})
-            ranges.update({self.field_name: filters})
+            must_clauses = query.get("query", {}).get("bool", {}).get("must", [])
+            must_clauses.append({"range": {self.field_name: filters}})
             query["query"] = query.get("query", {})
-            query["query"]["range"] = ranges
+            query["query"]["bool"] = query["query"].get("bool", {})
+            query["query"]["bool"]["must"] = must_clauses
         return query
 
 
@@ -104,8 +129,11 @@ class SearchFilter(BaseFilter):
 
         :returns: query after the provided search pattern has been applied
         """
-        match = query.get("match", {})
-        match.update({self.field_name: value})
+        must_clauses = query.get("query", {}).get("bool", {}).get("must", [])
+        must_clauses.append({"match": {self.field_name: value}})
+        query["query"] = query.get("query", {})
+        query["query"]["bool"] = query["query"].get("bool", {})
+        query["query"]["bool"]["must"] = must_clauses
         return query
 
 
