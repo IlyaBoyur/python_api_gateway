@@ -11,7 +11,7 @@ from .writer import Writer
 class FilmFilterSchema(BaseSchema):
     id: uuid.UUID | None = Field(default=None)
     ids: list[uuid.UUID] | None = Field(default=None)
-    excluded_ids: uuid.UUID | None = Field(default=None)
+    excluded_ids: list[uuid.UUID] | None = Field(default=None)
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
     imdb_rating: tuple[float | None, float | None] | None = Field(default=None)
