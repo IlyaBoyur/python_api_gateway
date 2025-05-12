@@ -79,12 +79,14 @@ class RangeFilter(BaseFilter):
 
         filters = {}
         if left_value is not None:
-            filters.update({"gte": value})
+            filters.update({"gte": left_value})
         if right_value is not None:
-            filters.update({"lte": value})
+            filters.update({"lte": right_value})
         if filters:
-            ranges = query.get("range", {})
+            ranges = query.get("query", {}).get("range", {})
             ranges.update({self.field_name: filters})
+            query["query"] = query.get("query", {})
+            query["query"]["range"] = ranges
         return query
 
 
