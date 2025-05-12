@@ -9,9 +9,7 @@ from src.common.circuit_breaker import AsyncCircuitBreaker
 from src.common.exceptions import DocumentNotFoundError, ElasticsearchDriverError, QuerySyntaxError
 
 
-async def async_bulk_request(
-    client: AsyncElasticsearch, actions: list[dict], **kwargs: Any
-) -> None:
+async def async_bulk_index(client: AsyncElasticsearch, actions: list[dict], **kwargs: Any) -> None:
     """Perform a bulk index operation."""
     return await async_bulk(client=client, actions=actions, **kwargs)
 
@@ -25,7 +23,7 @@ def handle_es_exceptions(func):
             raise DocumentNotFoundError(kwargs.get("doc_id", "unknown"))
         except es_exceptions.RequestError as e:
             raise QuerySyntaxError(str(e.info))
-        except es_exceptions.ElasticsearchException as e:
+        except es_exceptions.ApiError as e:
             raise ElasticsearchDriverError(str(e.info))
 
     return wrapper

@@ -1,13 +1,17 @@
 import abc
+from collections.abc import Sequence
+from typing import Any, TypeVar
+
+from pydantic import BaseModel
 
 
 class ISearchEngine:
     @abc.abstractmethod
-    def search(self, index: str, query: dict) -> dict:
+    async def search(self, index: str, query: dict[str, Any]) -> dict[str, Any]:
         """Search for documents in the specified index using the provided query."""
         ...
 
     @abc.abstractmethod
-    def get_document(self, index: str, doc_id: str) -> dict:
+    async def get_document(self, index: str, doc_id: str) -> dict:
         """Get a document by its ID from the specified index."""
         ...

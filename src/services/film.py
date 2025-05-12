@@ -2,7 +2,18 @@ from functools import lru_cache
 
 from src.common.key_value_database import IKeyValueDatabase
 from src.common.search_engine import ISearchEngine
-from src.models.film import Film
+from src.common.search_engine.filter_fields import (
+    Filter,
+    InFilter,
+    LimitOffsetFilter,
+    OrderingField,
+    OrderingFilter,
+    RangeFilter,
+    SearchFilter,
+)
+from src.common.search_engine.filtersets import AsyncFilterSet
+from src.models.base import BaseSchema
+from src.models.film import Film, FilmFilterSchema
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -10,8 +21,24 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 MOVIES_INDEX = "movies"
 
 
+class FilmFilterSet(AsyncFilterSet):
+    id = Filter("id")
+    title = SearchFilter("title")
+    description = SearchFilter("description")
+    imdb_rating = RangeFilter("imdb_rating")
+    pagination = LimitOffsetFilter("pagination")
+    order = OrderingFilter(
+        id=OrderingField("id"),
+        imdb_rating=OrderingField("imdb_rating"),
+        created=OrderingField("created"),
+        title=OrderingField("title"),
+    )
+
+
 class FilmService:
     """Cодержит бизнес-логику по работе с фильмами."""
+
+    filter_set: AsyncFilterSet = FilmFilterSet
 
     def __init__(self, key_value_database: IKeyValueDatabase, search_engine: ISearchEngine) -> None:
         self.key_value_database = key_value_database
@@ -26,6 +53,12 @@ class FilmService:
                 return None
             await self._put_film_to_cache(film)
         return film
+
+    async def filter(self, params: FilmFilterSchema) -> list[Film]:
+        filter_set = self.filter_set()
+        es_query = filter_set.filter_query(params.dict(exclude_none=True))
+        result = await self.search_engine.search(index=MOVIES_INDEX, params=es_query)
+        return [Film(**doc["_source"]) for doc in result["hits"]["hits"]]
 
     async def _get_film_from_search_engine(self, film_id: str) -> Film | None:
         doc = await self.search_engine.get_document(index=MOVIES_INDEX, doc_id=film_id)
