@@ -5,6 +5,7 @@ from src.common.search_engine import ISearchEngine
 from src.common.search_engine.filter_fields import (
     Filter,
     InFilter,
+    NotInFilter,
     LimitOffsetFilter,
     OrderingField,
     OrderingFilter,
@@ -23,6 +24,8 @@ MOVIES_INDEX = "movies"
 
 class FilmFilterSet(AsyncFilterSet):
     id = Filter("id")
+    ids = InFilter("id")
+    excluded_ids = NotInFilter("id")
     title = SearchFilter("title")
     description = SearchFilter("description")
     imdb_rating = RangeFilter("imdb_rating")
@@ -30,7 +33,6 @@ class FilmFilterSet(AsyncFilterSet):
     order = OrderingFilter(
         id=OrderingField("id"),
         imdb_rating=OrderingField("imdb_rating"),
-        created=OrderingField("created"),
         title=OrderingField("title.raw"),
     )
 
