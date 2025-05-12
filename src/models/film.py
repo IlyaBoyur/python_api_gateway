@@ -15,7 +15,6 @@ class FilmFilterSchema(BaseSchema):
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
     imdb_rating: tuple[float | None, float | None] | None = Field(default=None)
-    # created_range: tuple[datetime | None, datetime | None] | None = Field(default=None)
     pagination: tuple[int, int] | None = Field(default=None)
     order: list[str] | None = Field(default=None)
 
@@ -26,6 +25,7 @@ class FilmFilterSchema(BaseSchema):
                 return [str(item) for item in value]
             return str(value)
         return value
+
 
 class Film(BaseSchema):
     id: uuid.UUID = Field(description="ID")
