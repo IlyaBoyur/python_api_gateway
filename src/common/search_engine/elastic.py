@@ -20,11 +20,11 @@ def handle_es_exceptions(func):
         try:
             return await func(*args, **kwargs)
         except es_exceptions.NotFoundError as e:
-            raise DocumentNotFoundError(kwargs.get("doc_id", "unknown"))
+            raise DocumentNotFoundError(doc_id=e.info.get("_id", "unknown"))
         except es_exceptions.RequestError as e:
-            raise QuerySyntaxError(str(e.info))
+            raise QuerySyntaxError(detail=str(e.info))
         except es_exceptions.ApiError as e:
-            raise ElasticsearchDriverError(str(e.info))
+            raise ElasticsearchDriverError(detail=str(e.info))
 
     return wrapper
 

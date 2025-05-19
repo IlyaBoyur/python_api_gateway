@@ -2,12 +2,34 @@ from typing import Any
 
 
 class BaseError(Exception):
-    message: str = "Internal Server Error"
+    """Base class for all custom exceptions.
+    Allows formatting via message template defined at the class level or during instantiation.
+    """
 
-    def __init__(self, message: str | None = None, *args: Any, **kwargs: Any):
+    message: str = "Internal Server Error"
+    message_template: str = ""
+
+    def __init__(self, message: str | None = None, **kwargs: Any) -> None:
+        self.kwargs = kwargs
+
         if message:
             self.message = message
-        super().__init__(self.message, *args, **kwargs)
+        elif self.message_template:
+            try:
+                self.message = self.message_template.format(**kwargs)
+            except KeyError as e:
+                missing_key = e.args[0]
+                raise ValueError(
+                    f"Missing keyword '{missing_key}' for formatting {self.__class__.__name__}"
+                ) from e
+        else:
+            self.message = self.__class__.__name__
+
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+
 
 
 class ServiceError(BaseError):
@@ -20,26 +42,29 @@ class ValidationServiceError(ServiceError):
     status: int = 422
 
 
+class CircuitBreakerOpenError(ServiceError):
+    message: str = "Circuit breaker is open, rejecting request."
+    status: int = 403
+
+
 class RepositoryError(BaseError):
     message: str = "Internal Service Error"
     status: int = 500
 
 
-class ElasticsearchDriverError(RepositoryError):
-    message: str = "Unexpected Elasticsearch error"
-    status: int = 500
-
-
-class DocumentNotFoundError(ElasticsearchDriverError):
-    message: str = "Document with ID '{doc_id}' not found."
+class DocumentNotFoundError(RepositoryError):
+    message_template: str = "Document with ID '{doc_id}' not found."
     status: int = 404
 
 
+class ElasticsearchDriverError(RepositoryError):
+    message_template: str = "Unexpected Elasticsearch error: {detail}"
+    status: int = 500
+
+
 class QuerySyntaxError(ElasticsearchDriverError):
-    message: str = "Query syntax error: {detail}"
+    message_template: str = "Query syntax error: {detail}"
     status: int = 400
 
 
-class CircuitBreakerOpenError(ElasticsearchDriverError):
-    message: str = "Circuit breaker is open, rejecting request."
-    status: int = 403
+
