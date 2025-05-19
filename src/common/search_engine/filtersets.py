@@ -8,13 +8,22 @@ from .filter_fields import BaseFilter, Filter, OrderingField, OrderingFilter
 
 
 class FilterSetMeta(abc.ABCMeta):
-    def __new__(mcs, name: str, bases: tuple, attrs: dict[str, Any]) -> "FilterSetMeta":
+    def __new__(
+        mcs,  # noqa: N804
+        name: str,
+        bases: tuple,
+        attrs: dict[str, Any],
+    ) -> "FilterSetMeta":
         attrs["_declared_filters"] = mcs.get_declared_filters(bases, attrs)
         new_class = super().__new__(mcs, name, bases, attrs)
         return new_class
 
     @classmethod
-    def get_declared_filters(mcs, _: tuple, attrs: dict[str, Any]) -> dict[str, BaseFilter]:
+    def get_declared_filters(
+        mcs,  # noqa: N804
+        _: tuple,
+        attrs: dict[str, Any],
+    ) -> dict[str, BaseFilter]:
         filters: dict[str, BaseFilter] = OrderedDict()
 
         for filter_name, filter_ in list(attrs.items()):

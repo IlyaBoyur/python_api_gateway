@@ -1,7 +1,8 @@
 import asyncio
 import time
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from functools import wraps
+from typing import Any
 
 from src.common.exceptions import CircuitBreakerOpenError
 
@@ -37,10 +38,10 @@ class AsyncCircuitBreaker:
             self.state = "CLOSED"
 
 
-def circuit_breaker(cb_getter):
-    def decorator(func):
+def circuit_breaker(cb_getter: Callable) -> Callable:
+    def decorator(func: Coroutine) -> Coroutine:
         @wraps(func)
-        async def wrapper(self, *args: tuple, **kwargs: dict):
+        async def wrapper(self, *args: tuple, **kwargs: dict) -> Any:
             cb: AsyncCircuitBreaker = cb_getter(self)
             if not await cb.allow():
                 raise CircuitBreakerOpenError

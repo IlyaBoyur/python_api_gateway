@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # поэтому сервер приложения для отладки запускаем здесь
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host="0.0.0.0",  # noqa: S104
         port=8080,
         log_config=LOGGING,
         log_level=logging.DEBUG,

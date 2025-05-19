@@ -1,16 +1,20 @@
 import asyncio
 import logging
+from collections.abc import Callable, Coroutine
 from functools import wraps
+from typing import Any
 
 from loguru import logger
 
 
 def retry_async(
-    retries: int = 5, backoff_factor: float = 0.5, retriable_exceptions: tuple = (Exception,)
-):
-    def decorator(func):
+    retries: int = 5,
+    backoff_factor: float = 0.5,
+    retriable_exceptions: tuple = (Exception,),
+) -> Callable:
+    def decorator(func: Coroutine) -> Coroutine:
         @wraps(func)
-        async def wrapper(*args: tuple, **kwargs: dict):
+        async def wrapper(*args: tuple, **kwargs: dict) -> Any:
             attempt = 0
             while attempt <= retries:
                 try:

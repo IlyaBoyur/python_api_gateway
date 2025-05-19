@@ -1,3 +1,4 @@
+from collections.abc import Coroutine
 from functools import wraps
 from typing import Any
 
@@ -14,9 +15,9 @@ async def async_bulk_index(client: AsyncElasticsearch, actions: list[dict], **kw
     return await async_bulk(client=client, actions=actions, **kwargs)
 
 
-def handle_es_exceptions(func):
+def handle_es_exceptions(func: Coroutine) -> Coroutine:
     @wraps(func)
-    async def wrapper(*args: tuple, **kwargs: dict):
+    async def wrapper(*args: tuple, **kwargs: dict) -> Any:
         try:
             return await func(*args, **kwargs)
         except es_exceptions.NotFoundError as e:
