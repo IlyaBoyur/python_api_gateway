@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, parse_obj_as
 
+from src.api.cache import api_cache
 from src.providers.services import get_genre_service
 from src.services.genre import GenreFilterSchema, GenreService
 
@@ -37,6 +38,7 @@ async def genre_details(
 
 
 @router.get("/")
+@api_cache(namespace="v1")
 async def genre_list(
     params: Annotated[GenreQuery, Depends(GenreQuery)],
     genre_service: Annotated[GenreService, Depends(get_genre_service)],

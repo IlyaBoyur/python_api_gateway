@@ -38,7 +38,7 @@ class RedisSettings(EnvBaseSettings):
     port: str = "6379"
     path: str = ""
     dsn: RedisDsn | str = ""
-    prefix: str = ""
+    prefix: str = "main"
 
     class Config(EnvBaseSettings.Config):
         env_prefix = "redis_"

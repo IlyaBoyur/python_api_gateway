@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, parse_obj_as
 
+from src.api.cache import api_cache
 from src.providers.services import get_film_service
 from src.services.film import FilmFilterSchema, FilmService
 
@@ -38,6 +39,7 @@ async def film_details(
 
 
 @router.get("/")
+@api_cache(namespace="v1")
 async def film_list(
     params: Annotated[FilmQuery, Depends(FilmQuery)],
     film_service: Annotated[FilmService, Depends(get_film_service)],

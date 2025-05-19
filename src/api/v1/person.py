@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, parse_obj_as
 
+from src.api.cache import api_cache
 from src.providers.services.person import get_person_service
 from src.services.person import PersonFilterSchema, PersonService
 
@@ -36,6 +37,7 @@ async def person_details(
 
 
 @router.get("/")
+@api_cache(namespace="v1")
 async def person_list(
     params: Annotated[PersonQuery, Depends(PersonQuery)],
     person_service: Annotated[PersonService, Depends(get_person_service)],
