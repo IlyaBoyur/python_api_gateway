@@ -58,7 +58,7 @@ class RedisSettings(EnvBaseSettings):
 
 
 class ElasticsearchDsn(AnyUrl):
-    allowed_schemes = {"https"}
+    allowed_schemes = {"http", "https"}
     user_required = True
 
 
