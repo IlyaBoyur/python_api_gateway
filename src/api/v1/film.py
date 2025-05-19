@@ -42,5 +42,5 @@ async def film_list(
     film_service: Annotated[FilmService, Depends(get_film_service)],
 ) -> FilmsResultSchema:
     filter_params = parse_obj_as(FilmFilterSchema, asdict(params))
-    films = await film_service.filter(filter_params)
+    films = await film_service.get_multi(filter_params)
     return FilmsResultSchema(results=[FilmOutSchema.from_entity(film) for film in films])
