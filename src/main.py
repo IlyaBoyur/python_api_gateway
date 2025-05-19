@@ -5,7 +5,7 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, ORJSONResponse
 
-from src.api.v1 import film
+from src.api.v1.router import include_routers
 from src.common.exceptions import RepositoryError, ValidationServiceError
 from src.common.key_value_database import RedisDatabase
 from src.common.search_engine import ElasticDatabase
@@ -37,7 +37,8 @@ async def shutdown():
     await search_engine.elastic.close()
 
 
-app.include_router(film.router, prefix="/v1/films", tags=["films"])
+app.include_router(include_routers())
+
 
 
 @app.exception_handler(ValidationServiceError)
