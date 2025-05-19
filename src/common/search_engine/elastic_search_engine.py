@@ -17,29 +17,21 @@ class ElasticSearchEngine(ISearchEngine):
         self._client = client
         self._cb = AsyncCircuitBreaker()
 
-    @circuit_breaker(lambda self: self._cb)
-    @retry_async(retriable_exceptions=(ElasticsearchDriverError,))
-    @handle_es_exceptions
     async def index_document(self, index: str, doc_id: str | None, document: dict) -> Any:
-        return await self._client.index(index=index, id=doc_id, document=document)
+        return await self.call_with_params(self._client.index, index=index, id=doc_id, document=document)
 
-    async def get_document(self, index: str, doc_id: str) -> Any:
-        return await self.call_with_params(self._client.get, index=index, id=doc_id)
+    async def get_document(self, index: str, doc_id: str) -> dict:
+        return await self.call_with_params(self._client.get, index=index, id=doc_id)["_source"]
 
-    @circuit_breaker(lambda self: self._cb)
-    @retry_async(retriable_exceptions=(ElasticsearchDriverError,))
-    @handle_es_exceptions
-    async def search(self, index: str, params: dict) -> Any:
+    async def search(self, index: str, params: dict) -> list[dict]:
         """Search for documents in the specified index using the provided query."""
         if not params.get("query"):
             params["query"] = {"match_all": {}}
-        return await self._client.search(index=index, **params)
+        results = await self.call_with_params(self._client.search, index=index, **params)
+        return [obj["_source"] for obj in results["hits"]["hits"]]
 
-    @circuit_breaker(lambda self: self._cb)
-    @retry_async(retriable_exceptions=(ElasticsearchDriverError,))
-    @handle_es_exceptions
     async def delete_document(self, index: str, doc_id: str) -> Any:
-        return await self._client.delete(index=index, id=doc_id)
+        return await self.call_with_params(self._client.delete, index=index, id=doc_id)
 
     async def bulk_index(self, actions: list[dict]) -> Any:
         return await self.call_with_params(async_bulk_index, client=self._client, actions=actions)
