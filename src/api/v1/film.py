@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, parse_obj_as
 
-from src.providers.services.film import get_film_service
+from src.providers.services import get_film_service
 from src.services.film import FilmFilterSchema, FilmService
 
 from .schemas.film import FilmOutSchema, FilmsResultSchema

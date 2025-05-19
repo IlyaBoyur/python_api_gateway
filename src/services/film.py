@@ -5,8 +5,8 @@ from src.common.search_engine import ISearchEngine
 from src.common.search_engine.filter_fields import (
     Filter,
     InFilter,
-    NotInFilter,
     LimitOffsetFilter,
+    NotInFilter,
     OrderingField,
     OrderingFilter,
     RangeFilter,
@@ -17,9 +17,7 @@ from src.models.base import BaseSchema
 from src.models.film import Film, FilmFilterSchema
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
-
-
-MOVIES_INDEX = "movies"
+FILM_INDEX = "movies"
 
 
 class FilmFilterSet(AsyncFilterSet):

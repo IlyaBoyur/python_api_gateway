@@ -40,7 +40,6 @@ async def shutdown():
 app.include_router(include_routers())
 
 
-
 @app.exception_handler(ValidationServiceError)
 async def unicorn_exception_handler(request: Request, exc: ValidationServiceError) -> JSONResponse:
     return JSONResponse(status_code=exc.status, content={"message": exc.message})
