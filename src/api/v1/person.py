@@ -20,7 +20,7 @@ class PersonQuery:
     id: uuid.UUID | None = Query(None)
     ids: list[uuid.UUID] | None = Query(None)
     excluded_ids: list[uuid.UUID] | None = Query(None)
-    full_name: str | None = Query(None)
+    name: str | None = Query(None)
     pagination: tuple[int, int] | None = Query(None)
     order: list[str] | None = Query(None)
 
