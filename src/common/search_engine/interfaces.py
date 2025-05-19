@@ -12,6 +12,6 @@ class ISearchEngine(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_document(self, index: str, doc_id: str) -> dict:
+    async def get_document(self, index: str, doc_id: str) -> dict | None:
         """Get a document by its ID from the specified index."""
         ...

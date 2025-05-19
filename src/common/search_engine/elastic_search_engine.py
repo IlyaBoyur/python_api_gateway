@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from typing import Any
 
+from loguru import logger
+
 from src.common.circuit_breaker import AsyncCircuitBreaker, circuit_breaker
 from src.common.exceptions import DocumentNotFoundError, ElasticsearchDriverError
 from src.common.retry import retry_async
@@ -15,13 +17,18 @@ from src.common.search_engine.interfaces import ISearchEngine
 class ElasticSearchEngine(ISearchEngine):
     def __init__(self, client: ElasticDatabase) -> None:
         self._client = client
-        self._cb = AsyncCircuitBreaker()
+        self._cb = AsyncCircuitBreaker(max_failures=2)
 
     async def index_document(self, index: str, doc_id: str | None, document: dict) -> Any:
         return await self.call_with_params(self._client.index, index=index, id=doc_id, document=document)
 
-    async def get_document(self, index: str, doc_id: str) -> dict:
-        return await self.call_with_params(self._client.get, index=index, id=doc_id)["_source"]
+    async def get_document(self, index: str, doc_id: str) -> dict | None:
+        try:
+            doc = await self.call_with_params(self._client.get, index=index, id=doc_id)
+            return doc["_source"]
+        except DocumentNotFoundError as error:
+            logger.info(error)
+        return None
 
     async def search(self, index: str, params: dict) -> list[dict]:
         """Search for documents in the specified index using the provided query."""
