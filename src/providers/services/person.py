@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -11,7 +12,7 @@ from src.services.person import PersonService
 
 @lru_cache
 def get_person_service(
-    key_value_database: IKeyValueDatabase = Depends(get_key_value_database),
-    search_engine: ISearchEngine = Depends(get_search_engine),
+    key_value_database: Annotated[IKeyValueDatabase, Depends(get_key_value_database)],
+    search_engine: Annotated[ISearchEngine, Depends(get_search_engine)],
 ) -> PersonService:
     return PersonService(key_value_database, search_engine)

@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -18,6 +19,6 @@ def get_redis_database() -> RedisDatabase:
 
 @lru_cache
 def get_key_value_database(
-    redis: RedisDatabase = Depends(get_redis_database),
+    redis: Annotated[RedisDatabase, Depends(get_redis_database)],
 ) -> IKeyValueDatabase:
     return RedisKeyValueDatabase(redis=redis)

@@ -1,5 +1,5 @@
+import abc
 import uuid
-from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Sequence
 from json import JSONDecodeError
 from typing import Generic, Protocol, TypeVar
@@ -20,12 +20,12 @@ ERROR_FAILED_TO_PARSE_CACHE_DATA = "Failed to parse Cache data for object_id: {o
 ERROR_FAILED_TO_WRITE_TO_CACHE = "Failed to write to Cache for object_id: {object_id}"
 
 
-class IEntityService(ABC, Generic[T, FilterSchema]):
-    @abstractmethod
+class IEntityService(abc.ABC, Generic[T, FilterSchema]):
+    @abc.abstractmethod
     async def get_by_id(self, entity_id: str) -> T | None:
         ...
 
-    @abstractmethod
+    @abc.abstractmethod
     async def get_multi(self, filters: FilterSchema) -> list[T]:
         ...
 

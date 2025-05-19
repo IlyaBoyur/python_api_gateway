@@ -27,7 +27,8 @@ class GenreQuery:
 
 @router.get("/{genre_id}")
 async def genre_details(
-    genre_id: uuid.UUID, genre_service: Annotated[GenreService, Depends(get_genre_service)]
+    genre_id: uuid.UUID,
+    genre_service: Annotated[GenreService, Depends(get_genre_service)],
 ) -> GenreOutSchema:
     genre = await genre_service.get_by_id(genre_id)
     if not genre:

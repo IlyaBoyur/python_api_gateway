@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -17,6 +18,6 @@ def get_elastic_database() -> ElasticDatabase:
 
 @lru_cache
 def get_search_engine(
-    es_database: ElasticDatabase = Depends(get_elastic_database),
+    es_database: Annotated[ElasticDatabase, Depends(get_elastic_database)],
 ) -> ISearchEngine:
     return ElasticSearchEngine(client=es_database)

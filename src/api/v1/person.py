@@ -26,7 +26,8 @@ class PersonQuery:
 
 @router.get("/{person_id}")
 async def person_details(
-    person_id: uuid.UUID, person_service: Annotated[PersonService, Depends(get_person_service)]
+    person_id: uuid.UUID,
+    person_service: Annotated[PersonService, Depends(get_person_service)],
 ) -> PersonOutSchema:
     person = await person_service.get_by_id(person_id)
     if not person:

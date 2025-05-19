@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -11,7 +12,7 @@ from src.services.genre import GenreService
 
 @lru_cache
 def get_genre_service(
-    key_value_database: IKeyValueDatabase = Depends(get_key_value_database),
-    search_engine: ISearchEngine = Depends(get_search_engine),
+    key_value_database: Annotated[IKeyValueDatabase, Depends(get_key_value_database)],
+    search_engine: Annotated[ISearchEngine, Depends(get_search_engine)],
 ) -> GenreService:
     return GenreService(key_value_database, search_engine)

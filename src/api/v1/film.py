@@ -28,7 +28,8 @@ class FilmQuery:
 
 @router.get("/{film_id}")
 async def film_details(
-    film_id: uuid.UUID, film_service: Annotated[FilmService, Depends(get_film_service)]
+    film_id: uuid.UUID,
+    film_service: Annotated[FilmService, Depends(get_film_service)],
 ) -> FilmOutSchema:
     film = await film_service.get_by_id(film_id)
     if not film:
