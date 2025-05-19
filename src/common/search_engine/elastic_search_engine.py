@@ -20,7 +20,9 @@ class ElasticSearchEngine(ISearchEngine):
         self._cb = AsyncCircuitBreaker(max_failures=2)
 
     async def index_document(self, index: str, doc_id: str | None, document: dict) -> Any:
-        return await self.call_with_params(self._client.index, index=index, id=doc_id, document=document)
+        return await self.call_with_params(
+            self._client.index, index=index, id=doc_id, document=document
+        )
 
     async def get_document(self, index: str, doc_id: str) -> dict | None:
         try:

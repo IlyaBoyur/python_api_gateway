@@ -31,7 +31,6 @@ class BaseError(Exception):
         return self.message
 
 
-
 class ServiceError(BaseError):
     message: str = "Internal Service Error"
     status: int = 500
@@ -65,6 +64,3 @@ class ElasticsearchDriverError(RepositoryError):
 class QuerySyntaxError(ElasticsearchDriverError):
     message_template: str = "Query syntax error: {detail}"
     status: int = 400
-
-
-
