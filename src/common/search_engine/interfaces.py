@@ -5,9 +5,9 @@ from typing import Any, TypeVar
 from pydantic import BaseModel
 
 
-class ISearchEngine:
+class ISearchEngine(abc.ABC):
     @abc.abstractmethod
-    async def search(self, index: str, query: dict[str, Any]) -> dict[str, Any]:
+    async def search(self, index: str, query: dict[str, Any]) -> list[dict[str, Any]]:
         """Search for documents in the specified index using the provided query."""
         ...
 

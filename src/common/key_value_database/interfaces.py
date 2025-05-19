@@ -1,7 +1,7 @@
 import abc
 
 
-class IKeyValueDatabase:
+class IKeyValueDatabase(abc.ABC):
     @abc.abstractmethod
     async def get_with_ttl(self, key: str) -> tuple[int, str | None]:
         ...
