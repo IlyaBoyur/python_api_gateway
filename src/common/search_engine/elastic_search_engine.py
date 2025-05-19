@@ -45,7 +45,7 @@ class ElasticSearchEngine(ISearchEngine):
     async def bulk_index(self, actions: list[dict]) -> Any:
         return await self.call_with_params(async_bulk_index, client=self._client, actions=actions)
 
-    @circuit_breaker(lambda self: self._cb)
+    @circuit_breaker(lambda self: self._cb, recorded_exceptions=(ElasticsearchDriverError,))
     @retry_async(retriable_exceptions=(ElasticsearchDriverError,))
     @handle_es_exceptions
     async def call_with_params(self, callable, **params: dict) -> Any:

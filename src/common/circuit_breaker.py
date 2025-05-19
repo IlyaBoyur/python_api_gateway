@@ -38,7 +38,10 @@ class AsyncCircuitBreaker:
             self.state = "CLOSED"
 
 
-def circuit_breaker(cb_getter: Callable) -> Callable:
+def circuit_breaker(
+    cb_getter: Callable,
+    recorded_exceptions: tuple[BaseException, ...] = (Exception,),
+) -> Callable:
     def decorator(func: Coroutine) -> Coroutine:
         @wraps(func)
         async def wrapper(self, *args: tuple, **kwargs: dict) -> Any:
@@ -49,7 +52,7 @@ def circuit_breaker(cb_getter: Callable) -> Callable:
                 result = await func(self, *args, **kwargs)
                 await cb.record_success()
                 return result
-            except Exception:
+            except recorded_exceptions:
                 await cb.record_failure()
                 raise
 

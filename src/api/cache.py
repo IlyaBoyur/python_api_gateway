@@ -23,7 +23,7 @@ def build_key(
     prefix = namespace
     cache_key = (
         prefix
-        + hashlib.md5(  # nosec:B303  # noqa: S324
+        + hashlib.md5(  # noqa: S324
             f"{func.__module__}:{func.__name__}:{args}:{kwargs}".encode(),
         ).hexdigest()
     )
