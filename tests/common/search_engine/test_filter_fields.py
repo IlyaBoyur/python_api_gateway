@@ -1,15 +1,16 @@
-import pytest
 from collections import OrderedDict
+
+import pytest
 
 from src.common.search_engine.filter_fields import (
     Filter,
     InFilter,
+    LimitOffsetFilter,
     NotInFilter,
-    RangeFilter,
-    SearchFilter,
     OrderingField,
     OrderingFilter,
-    LimitOffsetFilter,
+    RangeFilter,
+    SearchFilter,
 )
 
 
