@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from typing import Generic, Protocol, TypeVar
 
 from loguru import logger
-from pydantic import BaseModel, ValidationError, parse_obj_as
+from pydantic import BaseModel, ValidationError, parse_raw_as
 
 from src.common.exceptions import ServiceError
 from src.common.key_value_database import IKeyValueDatabase
@@ -74,7 +74,7 @@ class BaseEntityService(IEntityService[T, FilterSchema], Generic[T, FilterSchema
         if not raw:
             return None
         try:
-            return parse_obj_as(self.schema, raw)
+            return parse_raw_as(self.schema, raw)
         except (JSONDecodeError, KeyError, TypeError, ValidationError) as error:
             logger.error(ERROR_FAILED_TO_PARSE_CACHE_DATA, object_id=entity_id)
             raise ServiceError from error
