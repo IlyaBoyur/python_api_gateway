@@ -142,7 +142,7 @@ class OrderingField(NamedTuple):
 
 
 class OrderingFilter(BaseFilter):
-    def __init__(self, **fields: OrderingField) -> None:
+    def __init__(self, field_name: Any | None = None, **fields: OrderingField) -> None:
         """Init.
         :param fields: available for future ordering fields
 
@@ -154,7 +154,7 @@ class OrderingFilter(BaseFilter):
             )
 
         """
-        super().__init__()
+        super().__init__(field_name=field_name)
         self.fields: dict[str, OrderingField] = fields
 
     def filter(
