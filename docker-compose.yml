@@ -6,7 +6,8 @@ x-app_environment: &app_environment
   LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
 
 x-redis_environment: &redis_environment
-  REDIS_DSN: ${REDIS_DSN:-redis://redis:6379}
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
 
 x-elastic_environment: &elastic_environment
   ELASTIC_HOST: ${ELASTIC_HOST:-elastic}
