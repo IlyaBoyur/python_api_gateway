@@ -5,6 +5,7 @@ from http import HTTPStatus
 from typing import Annotated, ParamSpec
 
 from fastapi import Depends, HTTPException, Response
+from loguru import logger
 
 from src.common.coder import NoDecodeJsonCoder
 from src.common.key_value_database.interfaces import IKeyValueDatabase
@@ -53,6 +54,7 @@ def api_cache(ttl: int = 60 * 60 * 24, namespace: str = "") -> Callable:
             _, result = await cache_db.get_with_ttl(key=cache_key)
             headers = {"Cache-Control": f"max-age={ttl}"}
             if result is not None:
+                logger.debug("CACHE HIT! key: {}", cache_key)
                 return Response(
                     content=coder.decode(result),
                     status_code=HTTPStatus.OK,
@@ -60,6 +62,7 @@ def api_cache(ttl: int = 60 * 60 * 24, namespace: str = "") -> Callable:
                     media_type="application/json",
                     background=None,
                 )
+            logger.debug("CACHE MISS! key: {}", cache_key)
             result = await func(*args, **kwargs)
             await cache_db.set(key=cache_key, value=coder.encode(result), expire=ttl)
             return result
