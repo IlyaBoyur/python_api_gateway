@@ -50,11 +50,14 @@ class BaseEntityService(IEntityService[T, FilterSchema], Generic[T, FilterSchema
 
     async def get_by_id(self, entity_id: str) -> T | None:
         entity = await self._entity_from_cache(entity_id)
+        if entity:
+            logger.debug("CACHE HIT for {}", entity_id)
+            return entity
+        logger.debug("CACHE MISS for {}", entity_id)
+        entity = await self._get_entity_from_search_engine(entity_id)
         if not entity:
-            entity = await self._get_entity_from_search_engine(entity_id)
-            if not entity:
-                return None
-            await self._put_entity_to_cache(entity, self.cache_expire_secs)
+            return None
+        await self._put_entity_to_cache(entity, self.cache_expire_secs)
         return entity
 
     async def get_multi(self, filters: FilterSchema) -> list[T]:
