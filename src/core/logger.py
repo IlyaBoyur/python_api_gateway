@@ -1,3 +1,5 @@
+from logging import config as logging_config
+
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 LOG_DEFAULT_HANDLERS = ["console"]
@@ -23,8 +25,8 @@ LOGGING = {
     "handlers": {
         "console": {
             "level": "DEBUG",
-            "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "class": "logging.StreamHandler",
         },
         "default": {
             "formatter": "default",
@@ -57,3 +59,7 @@ LOGGING = {
         "handlers": LOG_DEFAULT_HANDLERS,
     },
 }
+
+
+def configure_logging():
+    logging_config.dictConfig(LOGGING)

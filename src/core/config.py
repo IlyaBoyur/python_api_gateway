@@ -1,19 +1,18 @@
 import os
 from functools import lru_cache
-from logging import config as logging_config
 from pathlib import Path
 from typing import Any
 
 from pydantic import AnyUrl, BaseSettings, RedisDsn, validator
 
-from src.core.logger import LOGGING
+from src.core.logger import configure_logging
 
 # Project Root Setting
 BASE_DIR = Path(__file__).parent.parent.parent
 
 
-# Logging Settings
-logging_config.dictConfig(LOGGING)
+# # Logging Settings
+configure_logging()
 
 
 class EnvBaseSettings(BaseSettings):
