@@ -82,8 +82,18 @@ class ElasticsearchSettings(EnvBaseSettings):
         )
 
 
+
+class LoggingSettings(EnvBaseSettings):
+    serializer: bool = False
+    level: str = "INFO"
+
+    class Config(EnvBaseSettings.Config):
+        env_prefix = "logging_"
+
+
 class Settings(EnvBaseSettings):
     app: AppSettings = AppSettings(name="movies")
     base_dir: Path = BASE_DIR
     redis: RedisSettings = RedisSettings()
     es: ElasticsearchSettings = ElasticsearchSettings()
+    logger: LoggingSettings = LoggingSettings()
