@@ -49,6 +49,7 @@ def configure_logging(config: dict) -> None:
         handlers=[
             {
                 "sink": sys.stderr,
+                "colorize": True,
                 "format": JSON_LOG_FORMAT if config["serializer"] is True else DEFAULT_LOG_FORMAT,
                 "serialize": config["serializer"],
                 "level": config["level"],
