@@ -10,16 +10,24 @@ from src.common.exceptions import RepositoryError, ValidationServiceError
 from src.common.key_value_database import RedisDatabase
 from src.common.search_engine import ElasticDatabase
 from src.common.uvloop import activate_uvloop
-from src.core.logger import LOGGING
+from src.core.logger import configure_logging
 from src.providers import key_value_database, search_engine
 from src.providers.settings import app_settings
 
-app = FastAPI(
-    title=app_settings.app.name,
-    docs_url="/v1/docs",
-    openapi_url="/v1/openapi.json",
-    default_response_class=ORJSONResponse,
-)
+
+def create_app():
+    application = FastAPI(
+        title=app_settings.app.name,
+        docs_url="/v1/docs",
+        openapi_url="/v1/openapi.json",
+        default_response_class=ORJSONResponse,
+    )
+    application.include_router(include_routers())
+    configure_logging(app_settings.logger.dict())
+    return application
+
+
+app = create_app()
 
 
 @app.on_event("startup")
@@ -37,9 +45,6 @@ async def shutdown():
     await search_engine.elastic.close()
 
 
-app.include_router(include_routers())
-
-
 @app.exception_handler(ValidationServiceError)
 async def unicorn_exception_handler(request: Request, exc: ValidationServiceError) -> JSONResponse:
     return JSONResponse(status_code=exc.status, content={"message": exc.message})
@@ -48,17 +53,3 @@ async def unicorn_exception_handler(request: Request, exc: ValidationServiceErro
 @app.exception_handler(RepositoryError)
 async def repository_exception_handler(request: Request, exc: RepositoryError) -> JSONResponse:
     return JSONResponse(status_code=exc.status, content={"message": exc.message})
-
-
-if __name__ == "__main__":
-    # Приложение должно запускаться с помощью команды
-    # `uvicorn main:app --host 0.0.0.0 --port 8080`
-    # Но таким способом проблематично запускать сервис в дебагере,
-    # поэтому сервер приложения для отладки запускаем здесь
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",  # noqa: S104
-        port=8080,
-        log_config=LOGGING,
-        log_level=logging.DEBUG,
-    )

@@ -5,14 +5,8 @@ from typing import Any
 
 from pydantic import AnyUrl, BaseSettings, RedisDsn, validator
 
-from src.core.logger import configure_logging
-
 # Project Root Setting
 BASE_DIR = Path(__file__).parent.parent.parent
-
-
-# # Logging Settings
-configure_logging()
 
 
 class EnvBaseSettings(BaseSettings):
@@ -82,7 +76,6 @@ class ElasticsearchSettings(EnvBaseSettings):
         )
 
 
-
 class LoggingSettings(EnvBaseSettings):
     serializer: bool = False
     level: str = "INFO"
@@ -92,7 +85,7 @@ class LoggingSettings(EnvBaseSettings):
 
 
 class Settings(EnvBaseSettings):
-    app: AppSettings = AppSettings(name="movies")
+    app: AppSettings = AppSettings()
     base_dir: Path = BASE_DIR
     redis: RedisSettings = RedisSettings()
     es: ElasticsearchSettings = ElasticsearchSettings()

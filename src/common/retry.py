@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from collections.abc import Callable, Coroutine
 from functools import wraps
 from typing import Any

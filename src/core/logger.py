@@ -1,65 +1,57 @@
-from logging import config as logging_config
+import logging
+import sys
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+import loguru
 
-LOG_DEFAULT_HANDLERS = ["console"]
-# В логгере настраивается логгирование uvicorn-сервера.
-# Про логирование в Python можно прочитать в документации
-# https://docs.python.org/3/howto/logging.html
-# https://docs.python.org/3/howto/logging-cookbook.html
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {"format": LOG_FORMAT},
-        "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "%(levelprefix)s %(message)s",
-            "use_colors": None,
-        },
-        "access": {
-            "()": "uvicorn.logging.AccessFormatter",
-            "fmt": "%(levelprefix)s %(client_addr)s - '%(request_line)s' %(status_code)s",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "formatter": "verbose",
-            "class": "logging.StreamHandler",
-        },
-        "default": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stdout",
-        },
-        "access": {
-            "formatter": "access",
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stdout",
-        },
-    },
-    "loggers": {
-        "": {
-            "handlers": LOG_DEFAULT_HANDLERS,
-            "level": "INFO",
-        },
-        "uvicorn.error": {
-            "level": "INFO",
-        },
-        "uvicorn.access": {
-            "handlers": ["access"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
-    "root": {
-        "level": "INFO",
-        "formatter": "verbose",
-        "handlers": LOG_DEFAULT_HANDLERS,
-    },
-}
+DEFAULT_LOG_FORMAT = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
+    " | <level>{level: <8}</level> "
+    " | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+)
+
+JSON_LOG_FORMAT = "{message} | {extra}"
 
 
-def configure_logging():
-    logging_config.dictConfig(LOGGING)
+class InterceptHandler(logging.Handler):
+    """Перехватывает логи стандартного лоигрования.
+
+    Решение из официальной документации:
+    https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging
+    """
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            level = loguru.logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno  # type: ignore
+        frame, depth = logging.currentframe(), 2
+        while frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back  # type: ignore
+            depth += 1
+        loguru.logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+def configure_logging(config: dict) -> None:
+    """Настройка логирования.
+
+    Очистка стандартных настроек для каждой библиотеки(при их наличии).
+    Определение собственного обработчика.
+    """
+    loguru.logger.remove()
+    logging.root.handlers = []
+    logging.root.setLevel(config["level"])
+    for name in logging.root.manager.loggerDict.keys():  # noqa: SIM118
+        if logging.getLogger(name).hasHandlers():
+            logging.getLogger(name).handlers.clear()
+        logging.getLogger(name).handlers = [InterceptHandler()]
+        logging.getLogger(name).propagate = False
+    loguru.logger.configure(
+        handlers=[
+            {
+                "sink": sys.stderr,
+                "format": JSON_LOG_FORMAT if config["serializer"] is True else DEFAULT_LOG_FORMAT,
+                "serialize": config["serializer"],
+                "level": config["level"],
+            }
+        ],
+    )
