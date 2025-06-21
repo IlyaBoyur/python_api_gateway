@@ -13,6 +13,9 @@ debugee-off:
 	docker compose kill app && \
 	docker compose up -d app
 
+build:
+	docker compose $(COMPOSE_FILES) build
+
 start:
 	docker compose $(COMPOSE_FILES) up $(c) --remove-orphans -d
 
